@@ -62,7 +62,7 @@ const Bani = () => {
           Wallet Allocations Calculator
         </h2>
 
-        <form className="grid gap-8">
+        <form className="grid gap-8 py-8 px-8">
           {Object.keys(value).map((key) => {
             return (
               <label key={key}>
@@ -72,6 +72,7 @@ const Bani = () => {
                   value={value[key]}
                   name={key}
                   onChange={handleChange}
+                  className="ml-4"
                 />
               </label>
             );
