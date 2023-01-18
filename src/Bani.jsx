@@ -3,23 +3,33 @@ import axios from "axios";
 
 const Bani = () => {
   const [value, setValue] = useState({});
+  const [total, setTotal] = useState(0);
 
   const handleChange = (e) => {
-    const value = e.target.value;
-    const name = e.target.name;
     setValue({
       ...value,
-      [name]: value,
+      [e.target.name]: e.target.value,
     });
   };
 
   let reset = (e) => {
     e.preventDefault();
+    setValue({});
+    setTotal(0);
   };
-  
-  const percentageConverter = (intialValue, totalValue) => {
-    const result = (intialValue / totalValue) * 100;
-    return result.toFixed();
+
+  const percentageConverter = (e) => {
+    e.preventDefault();
+    const totalValue = Object.values(value).reduce(
+      (a, b) => Number(a) + Number(b),
+      0
+    );
+    const percentageValue = Object.keys(value).reduce((acc, key) => {
+      acc[key] = (value[key] / totalValue) * 100;
+      return acc;
+    }, {});
+    setTotal(totalValue);
+    setValue({ ...value, ...percentageValue });
   };
 
   useEffect(() => {
@@ -27,22 +37,21 @@ const Bani = () => {
     axios
       .get("https://stage.getbani.com/api/v1/account/fiat_wallets/210/", {
         headers: {
-          'Authorization': 'Token 1d3abb430d386468ef63167602a6f522118c1d1c4e88816c4898267552d10452'
-        }
+          Authorization:
+            "Token 1d3abb430d386468ef63167602a6f522118c1d1c4e88816c4898267552d10452",
+        },
       })
       .then((response) => {
-      let results = response.data.data;
+        let results = response.data.data;
         results.map((wallet) => {
           const key = wallet.currency;
-          return () => {
-            initialState[key] === "undefined" ? initialState[key] += wallet.available_balance:
-            initialState[key] = wallet.available_balance
-            setValue(initialState);
-          }
+          initialState[key] === "undefined"
+            ? (initialState[key] += wallet.available_balance)
+            : (initialState[key] = wallet.available_balance);
         });
+        setValue(initialState);
       })
-      .catch((error) => console.log(error))
-    
+      .catch((error) => console.log(error));
   }, []);
 
   return (
@@ -54,16 +63,15 @@ const Bani = () => {
         </h2>
 
         <form className="grid gap-8">
-          {test.map((wallet) => {
+          {Object.keys(value).map((key) => {
             return (
-              <label key={wallet.fiat_wallet_id}>
-                {wallet.currency}
+              <label key={key}>
+                {key}
                 <input
                   type="text"
-                  value={value[wallet.currency]}
-                  name={value[wallet.currency]}
+                  value={value[key]}
+                  name={key}
                   onChange={handleChange}
-                  readOnly={wallet.wallet_type === "default" ? true : false}
                 />
               </label>
             );
